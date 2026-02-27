@@ -15,6 +15,11 @@ _(none)_
 - [x] Create `README.md` with full usage documentation and sample output
 - [x] Create `.env.example` with placeholder credentials
 - [x] Generate `requirements.txt` with pinned package versions
+- [x] Improve CLI UX with order-placement spinner feedback
+- [x] Enhance order summary UI with emojis and estimated value display
+- [x] Improve validation error UX with clearer field messages and tips
+- [x] Improve result table formatting for quantities and prices
+- [x] Add timestamp and total order value to success output
 
 ## Backlog
 
