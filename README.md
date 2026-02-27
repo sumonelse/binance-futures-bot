@@ -21,7 +21,7 @@ comprehensive logging, and a polished terminal UX.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-username>/binance-futures-bot.git
+git clone https://github.com/sumonelse/binance-futures-bot.git
 cd binance-futures-bot
 
 # 2. Create and activate a virtual environment
