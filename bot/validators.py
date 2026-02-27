@@ -66,7 +66,8 @@ class OrderRequest(BaseModel):
         """Ensure that a price is provided when order_type is LIMIT."""
         if self.order_type == OrderType.LIMIT and self.price is None:
             raise ValueError(
-                "price is required when order_type is LIMIT — provide --price <value>"
+                "Price is required for LIMIT orders. "
+                "Add --price <value> flag to specify the limit price."
             )
         return self
 

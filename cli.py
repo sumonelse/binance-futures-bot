@@ -84,13 +84,19 @@ def place_order_cmd(
             price=price,
         )
     except ValidationError as exc:
-        error_lines = "\n".join(
-            f"[bold]{e['loc'][0]}[/bold]: {e['msg']}" for e in exc.errors()
-        )
+        error_messages = []
+        for e in exc.errors():
+            field = e['loc'][0]
+            msg = e['msg']
+            error_messages.append(f"  [bold red]✗[/bold red] [bold]{field}[/bold]: {msg}")
+        
+        error_text = "\n".join(error_messages)
+        error_text += "\n\n[dim]💡 Tip: Use --help to see all available options and requirements[/dim]"
+        
         console.print(
             Panel(
-                error_lines,
-                title="[red]Validation Error[/red]",
+                error_text,
+                title="[red]❌ Validation Error[/red]",
                 border_style="red",
             )
         )
