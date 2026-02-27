@@ -99,15 +99,25 @@ def place_order_cmd(
     # ------------------------------------------------------------------
     # 2. Display a confirmation panel and prompt the user.
     # ------------------------------------------------------------------
+    side_emoji = "🟢" if order.side.value == "BUY" else "🔴"
+    type_emoji = "⚡" if order.order_type.value == "MARKET" else "📊"
+    
     summary = (
-        f"[bold]Symbol   :[/bold]  {order.symbol}\n"
-        f"[bold]Side     :[/bold]  {order.side.value}\n"
-        f"[bold]Type     :[/bold]  {order.order_type.value}\n"
-        f"[bold]Quantity :[/bold]  {order.quantity}\n"
-        f"[bold]Price    :[/bold]  {order.price if order.price is not None else 'N/A (Market order)'}"
+        f"{side_emoji} [bold]Side     :[/bold]  {order.side.value}\n"
+        f"{type_emoji} [bold]Type     :[/bold]  {order.order_type.value}\n"
+        f"💰 [bold]Symbol   :[/bold]  {order.symbol}\n"
+        f"📦 [bold]Quantity :[/bold]  {order.quantity}\n"
     )
+    
+    if order.price is not None:
+        summary += f"💵 [bold]Price    :[/bold]  {order.price}\n"
+        estimated_value = order.price * order.quantity
+        summary += f"💎 [bold]Est. Value:[/bold]  {estimated_value:.2f} USDT"
+    else:
+        summary += f"💵 [bold]Price    :[/bold]  Market Price"
+    
     console.print(
-        Panel(summary, title="[cyan]Order Summary[/cyan]", border_style="cyan")
+        Panel(summary, title="[bold cyan]📋 Order Summary[/bold cyan]", border_style="cyan")
     )
 
     confirmed: bool = typer.confirm("Confirm order placement?", default=False)
