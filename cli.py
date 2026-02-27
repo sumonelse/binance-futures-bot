@@ -119,8 +119,9 @@ def place_order_cmd(
     # 3. Place the order and handle errors gracefully.
     # ------------------------------------------------------------------
     try:
-        client = get_client()
-        result = place_order(client, order)
+        with console.status("[bold cyan]Placing order...", spinner="dots"):
+            client = get_client()
+            result = place_order(client, order)
     except EnvironmentError as exc:
         console.print(
             Panel(str(exc), title="[red]Configuration Error[/red]", border_style="red")
