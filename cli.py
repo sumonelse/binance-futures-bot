@@ -175,17 +175,40 @@ def place_order_cmd(
     # ------------------------------------------------------------------
     # 4. Display the result as a Rich table.
     # ------------------------------------------------------------------
-    table = Table(title=":white_check_mark: Order Placed Successfully", border_style="green")
+    table = Table(title="✅ Order Placed Successfully", border_style="green", title_style="bold green")
     table.add_column("Field", style="bold cyan", no_wrap=True)
     table.add_column("Value", style="white")
 
     table.add_row("Order ID", str(result.get("orderId", "N/A")))
-    table.add_row("Status", str(result.get("status", "N/A")))
+    table.add_row("Status", f"[bold green]{result.get('status', 'N/A')}[/bold green]")
     table.add_row("Symbol", str(result.get("symbol", "N/A")))
-    table.add_row("Side", str(result.get("side", "N/A")))
+    
+    side_value = str(result.get("side", "N/A"))
+    side_color = "green" if side_value == "BUY" else "red"
+    table.add_row("Side", f"[bold {side_color}]{side_value}[/bold {side_color}]")
+    
     table.add_row("Type", str(result.get("type", "N/A")))
-    table.add_row("Executed Qty", str(result.get("executedQty", "N/A")))
-    table.add_row("Avg Price", str(result.get("avgPrice", "N/A")))
+    
+    # Format executed quantity with proper decimals
+    executed_qty = result.get("executedQty", "0")
+    try:
+        executed_qty_float = float(executed_qty)
+        formatted_qty = f"{executed_qty_float:.8f}".rstrip('0').rstrip('.')
+        table.add_row("Executed Qty", formatted_qty)
+    except (ValueError, TypeError):
+        table.add_row("Executed Qty", str(executed_qty))
+    
+    # Format average price with proper decimals
+    avg_price = result.get("avgPrice", "0")
+    try:
+        avg_price_float = float(avg_price)
+        if avg_price_float > 0:
+            formatted_price = f"{avg_price_float:.4f}".rstrip('0').rstrip('.')
+            table.add_row("Avg Price", f"{formatted_price} USDT")
+        else:
+            table.add_row("Avg Price", "N/A")
+    except (ValueError, TypeError):
+        table.add_row("Avg Price", str(avg_price))
 
     console.print(table)
 
