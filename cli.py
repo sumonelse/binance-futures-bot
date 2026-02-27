@@ -6,6 +6,7 @@ This module must not contain validation or API logic — it delegates
 entirely to bot.validators, bot.client, and bot.orders.
 """
 
+from datetime import datetime
 from typing import Optional
 
 import requests
@@ -179,6 +180,10 @@ def place_order_cmd(
     table.add_column("Field", style="bold cyan", no_wrap=True)
     table.add_column("Value", style="white")
 
+    # Add timestamp
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    table.add_row("Timestamp", f"[dim]{timestamp}[/dim]")
+    
     table.add_row("Order ID", str(result.get("orderId", "N/A")))
     table.add_row("Status", f"[bold green]{result.get('status', 'N/A')}[/bold green]")
     table.add_row("Symbol", str(result.get("symbol", "N/A")))
@@ -209,6 +214,16 @@ def place_order_cmd(
             table.add_row("Avg Price", "N/A")
     except (ValueError, TypeError):
         table.add_row("Avg Price", str(avg_price))
+    
+    # Calculate and display total order value
+    try:
+        qty = float(executed_qty)
+        price = float(avg_price)
+        if qty > 0 and price > 0:
+            total_value = qty * price
+            table.add_row("Total Value", f"[bold]{total_value:.2f}[/bold] USDT")
+    except (ValueError, TypeError):
+        pass
 
     console.print(table)
 
