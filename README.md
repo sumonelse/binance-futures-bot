@@ -44,10 +44,12 @@ cp .env.example .env     # macOS / Linux
 
 ## Usage
 
-All commands are run via `cli.py`:
+All commands are run via `cli.py`. Use `--help` to see all options:
 
 ```bash
 python cli.py place-order --help
+python cli.py cancel-order --help
+python cli.py list-orders --help
 ```
 
 ### Place a MARKET order
@@ -71,32 +73,101 @@ python cli.py place-order \
   --price 95000
 ```
 
+### Place a LIMIT order with custom time-in-force (IOC)
+
+```bash
+python cli.py place-order \
+  --symbol ETHUSDT \
+  --side BUY \
+  --type LIMIT \
+  --quantity 1.0 \
+  --price 3500 \
+  --time-in-force IOC
+```
+
+Supported time-in-force values: `GTC` (Good Till Cancelled, default), `IOC` (Immediate Or Cancel), `FOK` (Fill Or Kill).
+
+### Preview an order with dry-run (no submission)
+
+```bash
+python cli.py place-order \
+  --symbol BTCUSDT \
+  --side BUY \
+  --type MARKET \
+  --quantity 0.01 \
+  --dry-run
+```
+
+The `--dry-run` flag validates the order and checks the symbol against live exchange info, but does **not** submit the order.
+
+### Cancel an open order
+
+```bash
+python cli.py cancel-order \
+  --symbol BTCUSDT \
+  --order-id 3951920742
+```
+
+### List all open orders
+
+```bash
+python cli.py list-orders
+```
+
+Filter by symbol:
+
+```bash
+python cli.py list-orders --symbol BTCUSDT
+```
+
 ---
 
 ## Sample Output
 
-```
-╭──────────────── Order Summary ─────────────────╮
-│ Symbol   :  BTCUSDT                             │
-│ Side     :  BUY                                 │
-│ Type     :  MARKET                              │
-│ Quantity :  0.01                                │
-│ Price    :  N/A (Market order)                  │
-╰─────────────────────────────────────────────────╯
-Confirm order placement? [y/N]: y
+**Place Order - Pre-confirmation panel:**
 
-           ✅ Order Placed Successfully
-┌──────────────┬──────────────────────┐
-│ Field        │ Value                │
-├──────────────┼──────────────────────┤
-│ Order ID     │ 3951920742           │
-│ Status       │ FILLED               │
-│ Symbol       │ BTCUSDT              │
-│ Side         │ BUY                  │
-│ Type         │ MARKET               │
-│ Executed Qty │ 0.010                │
-│ Avg Price    │ 94823.50             │
-└──────────────┴──────────────────────┘
+```
+╭─────────────────── 📋 Order Summary ─────────────────╮
+│ 🟢 Side          :  BUY                              │
+│ ⚡ Type          :  MARKET                            │
+│ 💰 Symbol        :  BTCUSDT                           │
+│ 📦 Quantity      :  0.01                              │
+│ 💵 Price         :  Market Price                      │
+╰──────────────────────────────────────────────────────╯
+Confirm order placement? [y/N]: y
+```
+
+**Order Placed Successfully:**
+
+```
+                ✅ Order Placed Successfully
+┌──────────────────┬───────────────────────┐
+│ Field            │ Value                 │
+├──────────────────┼───────────────────────┤
+│ Timestamp        │ 2026-02-28 14:37:45   │
+│ Order ID         │ 3951920742            │
+│ Status           │ FILLED                │
+│ Symbol           │ BTCUSDT               │
+│ Side             │ BUY                   │
+│ Type             │ MARKET                │
+│ Executed Qty     │ 0.01                  │
+│ Avg Price        │ 94823.5 USDT          │
+│ Total Value      │ 948.24 USDT           │
+└──────────────────┴───────────────────────┘
+```
+
+**List Open Orders:**
+
+```
+              📋 Open Orders — All Symbols
+┌─────────┬──────────┬─────┬───────┬──────┬────┬──────────┬─────────┬───────────────────┐
+│ Order   │ Symbol   │     │       │      │    │          │         │                   │
+│ ID      │          │ Side│ Type  │ TIF  │Qty │ Price    │ Status  │ Placed At         │
+├─────────┼──────────┼─────┼───────┼──────┼────┼──────────┼─────────┼───────────────────┤
+│ 123456  │ BTCUSDT  │ BUY │ LIMIT │ GTC  │0.5 │ 45000 US │ NEW     │ 2026-02-28 14:25  │
+│ 123457  │ ETHUSDT  │SELL │ LIMIT │ IOC  │2.0 │ 2800 USD │ NEW     │ 2026-02-28 14:30  │
+└─────────┴──────────┴─────┴───────┴──────┴────┴──────────┴─────────┴───────────────────┘
+2 open order(s) found.
 ```
 
 ---
@@ -106,31 +177,43 @@ Confirm order placement? [y/N]: y
 ```
 binance-futures-bot/
 ├── bot/
-│   ├── __init__.py          # Package marker
-│   ├── client.py            # Binance API client wrapper (auth + testnet URL)
-│   ├── orders.py            # Order placement logic
-│   ├── validators.py        # Pydantic v2 OrderRequest model
-│   └── logging_config.py   # Loguru sink configuration
-├── cli.py                   # Typer CLI entry point
-├── .env.example             # Template for API credentials
-├── .gitignore
-├── README.md
-├── requirements.txt
-└── TODO.md
+│   ├── __init__.py            # Package marker
+│   ├── client.py              # Binance API client wrapper + symbol validation
+│   ├── orders.py              # Order placement, cancellation, and listing logic
+│   ├── validators.py          # Pydantic v2 OrderRequest and TimeInForce enums
+│   └── logging_config.py      # Loguru sink configuration (file + console)
+├── cli.py                     # Typer CLI entry point (3 commands)
+├── logs/                      # Rotating log directory (created at runtime)
+│   └── trading_bot.log        # Debug-level log file (10 MB rotation, 5 retained)
+├── .env.example               # Template for BINANCE_API_KEY and BINANCE_API_SECRET
+├── .gitignore                 # Excludes .env, logs/, __pycache__, .venv
+├── README.md                  # This file
+├── requirements.txt           # Pinned dependency versions
+└── TODO.md                    # Completed and backlog tasks
 ```
+
+---
+
+## Features
+
+- ✅ **MARKET and LIMIT orders** — both order types fully supported.
+- ✅ **Configurable time-in-force (GTC/IOC/FOK)** — choose how your LIMIT orders behave.
+- ✅ **Dry-run mode** — validate and preview orders without submitting to the exchange.
+- ✅ **Symbol validation** — automatically checks if your trading pair exists on the testnet.
+- ✅ **Order cancellation** — cancel any open order by symbol and order ID.
+- ✅ **Order listing** — view all open orders, optionally filtered by symbol.
+- ✅ **Input validation** — pydantic v2 enforces strict validation before any API call.
+- ✅ **Comprehensive logging** — rotating file logs (`logs/trading_bot.log`) + styled console output.
+- ✅ **Rich terminal UI** — styled panels, tables, and spinners for a professional experience.
+- ✅ **Clean architecture** — strict layer separation (CLI → validators → client → API).
 
 ---
 
 ## Assumptions
 
-1. **Testnet only** — this bot is hard-coded to target `https://testnet.binancefuture.com`.
-   It will not place orders on the live exchange.
-2. **LIMIT orders use GTC** (`timeInForce=GTC`). Other time-in-force values are not
-   exposed via the CLI at this time.
-3. **Quantity precision** is the caller's responsibility — the bot passes the value
-   directly to the API. Binance will reject orders that violate the symbol's
-   `LOT_SIZE` filter.
-4. **Synchronous** — no async/threading. Suitable for manual CLI use, not
-   high-frequency automated trading.
-5. **Credentials** are loaded exclusively from a `.env` file; no command-line flags
-   for API keys are provided to avoid accidental exposure in shell history.
+- **Testnet only** — hard-coded to target `https://testnet.binancefuture.com`. No live exchange support.
+- **LIMIT orders default to GTC** — use `--time-in-force IOC` or `FOK` to override.
+- **Quantity precision is caller's responsibility** — Binance rejects orders violating `LOT_SIZE` filter.
+- **Synchronous execution** — suitable for manual CLI use, not high-frequency trading.
+- **Credentials in `.env` file** — no command-line API key flags to avoid shell history leakage.
+- **Symbol validation is best-effort** — if the testnet is unreachable, validation is skipped with a warning.
