@@ -20,11 +20,12 @@ _(none)_
 - [x] Improve validation error UX with clearer field messages and tips
 - [x] Improve result table formatting for quantities and prices
 - [x] Add timestamp and total order value to success output
+- [x] Add `--dry-run` flag to preview order without submitting
+- [x] Add support for additional `timeInForce` values (IOC, FOK) via `--time-in-force` flag
+- [x] Add `cancel-order` command to cancel an open order by ID
+- [x] Add `list-orders` command to display open futures orders
+- [x] Add input validation for symbol existence against exchange info
 
 ## Backlog
 
-- [ ] Add `--dry-run` flag to preview order without submitting
-- [ ] Add support for additional `timeInForce` values (IOC, FOK)
-- [ ] Add `cancel-order` command to cancel an open order by ID
-- [ ] Add `list-orders` command to display open futures positions
-- [ ] Add input validation for symbol existence against exchange info
+_(none)_

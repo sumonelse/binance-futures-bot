@@ -7,7 +7,7 @@ No business logic lives here — only connection setup.
 """
 
 import os
-from typing import Optional
+from typing import Optional, Set
 
 from binance.client import Client
 from binance.exceptions import BinanceAPIException, BinanceRequestException  # noqa: F401 — re-exported for callers
@@ -60,3 +60,31 @@ def get_client() -> Client:
     logger.debug(f"Binance client ready | futures_url={client.FUTURES_URL}")
 
     return client
+
+
+def get_futures_symbols(client: Client) -> Set[str]:
+    """Return the set of active USDT-M Futures symbols from exchange info.
+
+    Fetches the exchange info endpoint and extracts every symbol whose
+    status is ``"TRADING"``.  Used for pre-flight validation before an
+    order is submitted.
+
+    Args:
+        client: Authenticated Binance client (from ``get_client``).
+
+    Returns:
+        A set of uppercase trading symbol strings, e.g. ``{"BTCUSDT", "ETHUSDT", ...}``.
+
+    Raises:
+        BinanceAPIException:     On API-level rejection.
+        BinanceRequestException: On network / serialisation errors.
+    """
+    logger.debug("Fetching futures exchange info for symbol validation")
+    info = client.futures_exchange_info()
+    symbols: Set[str] = {
+        s["symbol"]
+        for s in info.get("symbols", [])
+        if s.get("status") == "TRADING"
+    }
+    logger.debug(f"Fetched {len(symbols)} active futures symbols from exchange info")
+    return symbols

@@ -25,16 +25,33 @@ class OrderType(str, Enum):
     LIMIT = "LIMIT"
 
 
+class TimeInForce(str, Enum):
+    """Time-in-force values for LIMIT orders.
+
+    GTC — Good Till Cancelled: order stays open until filled or manually cancelled.
+    IOC — Immediate Or Cancel: fills whatever quantity is available immediately;
+          cancels the rest.
+    FOK — Fill Or Kill: must be filled in its entirety immediately or cancelled
+          entirely.
+    """
+
+    GTC = "GTC"
+    IOC = "IOC"
+    FOK = "FOK"
+
+
 class OrderRequest(BaseModel):
     """Validated order request for Binance Futures Testnet.
 
     Attributes:
-        symbol:     Trading pair in uppercase, e.g. ``BTCUSDT``.
-        side:       ``BUY`` or ``SELL``.
-        order_type: ``MARKET`` or ``LIMIT``.
-        quantity:   Order quantity; must be greater than zero.
-        price:      Limit price; required when ``order_type`` is ``LIMIT``,
-                    must be greater than zero.
+        symbol:         Trading pair in uppercase, e.g. ``BTCUSDT``.
+        side:           ``BUY`` or ``SELL``.
+        order_type:     ``MARKET`` or ``LIMIT``.
+        quantity:       Order quantity; must be greater than zero.
+        price:          Limit price; required when ``order_type`` is ``LIMIT``,
+                        must be greater than zero.
+        time_in_force:  Time-in-force for LIMIT orders; defaults to ``GTC``.
+                        Ignored for MARKET orders.
     """
 
     symbol: str = Field(
@@ -59,6 +76,10 @@ class OrderRequest(BaseModel):
         None,
         gt=0,
         description="Limit price — required for LIMIT orders, must be greater than zero",
+    )
+    time_in_force: TimeInForce = Field(
+        TimeInForce.GTC,
+        description="Time-in-force for LIMIT orders: GTC, IOC, or FOK (ignored for MARKET)",
     )
 
     @model_validator(mode="after")
