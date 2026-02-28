@@ -34,7 +34,7 @@ def setup_logging() -> None:
         ),
         enqueue=True,
         backtrace=True,
-        diagnose=True,
+        diagnose=False,  # kept off to prevent local-variable introspection leaking secrets
     )
 
     # ------------------------------------------------------------------

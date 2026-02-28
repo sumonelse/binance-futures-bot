@@ -62,24 +62,22 @@ def place_order(client: Client, order: OrderRequest) -> Dict[str, Any]:
                 timeInForce=order.time_in_force.value,
             )
     except BinanceAPIException as exc:
-        logger.error(
-            f"Binance API error while placing order: {exc.message} "
-            f"(code={exc.code})",
-            exc_info=True,
+        logger.opt(exception=True).error(
+            f"Binance API error while placing order: {exc.message} (code={exc.code})"
         )
         raise
     except BinanceRequestException as exc:
-        logger.error(
-            f"Binance request error while placing order: {exc}",
-            exc_info=True,
+        logger.opt(exception=True).error(
+            f"Binance request error while placing order: {exc}"
         )
         raise
 
     logger.info(
-        "Order placed successfully | orderId={} status={} executedQty={}".format(
+        "Order placed successfully | orderId={} status={} executedQty={} avgPrice={}".format(
             response.get("orderId"),
             response.get("status"),
             response.get("executedQty"),
+            response.get("avgPrice", "N/A"),
         )
     )
 
@@ -110,16 +108,13 @@ def cancel_order(client: Client, symbol: str, order_id: int) -> Dict[str, Any]:
             orderId=order_id,
         )
     except BinanceAPIException as exc:
-        logger.error(
-            f"Binance API error while cancelling order {order_id}: {exc.message} "
-            f"(code={exc.code})",
-            exc_info=True,
+        logger.opt(exception=True).error(
+            f"Binance API error while cancelling order {order_id}: {exc.message} (code={exc.code})"
         )
         raise
     except BinanceRequestException as exc:
-        logger.error(
-            f"Binance request error while cancelling order {order_id}: {exc}",
-            exc_info=True,
+        logger.opt(exception=True).error(
+            f"Binance request error while cancelling order {order_id}: {exc}"
         )
         raise
 
@@ -162,16 +157,13 @@ def get_open_orders(
             kwargs["symbol"] = symbol
         orders: List[Dict[str, Any]] = client.futures_get_open_orders(**kwargs)  # type: ignore[assignment]
     except BinanceAPIException as exc:
-        logger.error(
-            f"Binance API error while fetching open orders: {exc.message} "
-            f"(code={exc.code})",
-            exc_info=True,
+        logger.opt(exception=True).error(
+            f"Binance API error while fetching open orders: {exc.message} (code={exc.code})"
         )
         raise
     except BinanceRequestException as exc:
-        logger.error(
-            f"Binance request error while fetching open orders: {exc}",
-            exc_info=True,
+        logger.opt(exception=True).error(
+            f"Binance request error while fetching open orders: {exc}"
         )
         raise
 
